@@ -52,7 +52,7 @@ async function getWarData(mode = 'normal') {
 // ✅ Auth for Google Sheets
 async function getSheet() {
     const auth = new google.auth.GoogleAuth({
-        keyFile: 'credentials.json',
+        credentials: JSON.parse(Buffer.from(process.env.GOOGLE_CREDS_B64, 'base64').toString())
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
     return google.sheets({ version: 'v4', auth });

@@ -1,36 +1,15 @@
 {
   "name": "coc-war-updater",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "googleapis": "^150.0.1",
     "node-cron": "^4.1.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CPLTOURNAMENT/coc-war-bot.git"
-  },
-  "bugs": {
-    "url": "https://github.com/CPLTOURNAMENT/coc-war-bot/issues"
-  },
-  "homepage": "https://github.com/CPLTOURNAMENT/coc-war-bot#readme"
-
-    "axios": "^1.6.0",
-    "dotenv": "^16.0.0",
-    "express": "^4.18.2",
-    "googleapis": "^105.0.0",
-    "node-cron": "^3.0.2"
   }
-      4765932 (fix: add start script and env)
 }
