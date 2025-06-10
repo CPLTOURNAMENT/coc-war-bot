@@ -52,8 +52,8 @@ async function getWarData(mode = 'normal') {
 async function getSheetClient() {
     const creds = JSON.parse(Buffer.from(process.env.GOOGLE_CREDS_B64, 'base64').toString());
     const auth = new google.auth.GoogleAuth({
-    credentials: creds,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'] // ✅ No semicolon!
+  credentials: creds,
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'] // ✅ write access
 });
 
     return google.sheets({ version: 'v4', auth });
