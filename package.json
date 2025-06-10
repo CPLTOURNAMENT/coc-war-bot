@@ -1,10 +1,10 @@
 {
   "name": "coc-war-updater",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node index.js"
-}
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +23,5 @@
   "bugs": {
     "url": "https://github.com/CPLTOURNAMENT/coc-war-bot/issues"
   },
-  "homepage": "https://github.com/CPLTOURNAMENT/coc-war-bot#readme",
-  "description": ""
+  "homepage": "https://github.com/CPLTOURNAMENT/coc-war-bot#readme"
 }
