@@ -13,3 +13,9 @@
     "node-cron": "^4.1.0"
   }
 }
+  "description": "Clash of Clans war tracker with Google Sheets sync",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CPLTOURNAMENT/coc-war-bot"
+  }
