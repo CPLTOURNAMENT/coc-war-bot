@@ -2,8 +2,7 @@ import requests
 import gspread
 import time
 import pytz
-import json
-import base64
+import os, json, base64
 from datetime import datetime, timedelta
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
@@ -22,8 +21,9 @@ UPDATE_INTERVAL = 2 * 60  # 2 minutes
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 # Decode base64 JSON from environment variable
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 service_account_info = json.loads(base64.b64decode(os.environ["GOOGLE_CREDS_B64"]))
-creds = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("sheets-bot.json", scope)
 client = gspread.authorize(creds)
 
 # Retry sheet access if API throws error
