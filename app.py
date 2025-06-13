@@ -2,7 +2,9 @@ import requests
 import gspread
 import time
 import pytz
-import os, json, base64
+import os
+import base64
+import json
 from datetime import datetime, timedelta
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
