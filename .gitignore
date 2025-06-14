@@ -1,6 +1,6 @@
-credentials.json
+client_secret.json
 .env
-credentials.json
+client_secret.json
 *.b64
 
 
