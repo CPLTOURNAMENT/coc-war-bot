@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 client_secret.json
 .env
 client_secret.json
 *.b64
 
 
+=======
+client_secret.json
+.env
+client_secret.json
+*.b64
+
+
+>>>>>>> 67c7817 (Local changes before rebase)
