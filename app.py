@@ -3,32 +3,52 @@ import gspread
 import time
 import pytz
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import base64
 import json
 from datetime import datetime, timedelta
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError
+from dotenv import load_dotenv
 
-# ----------- CONFIG -----------
-COC_API_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImI0ODk1ZmUzLWIwNjQtNDYyMS04MjhiLTU0YzA0NmI1YmI1MyIsImlhdCI6MTc0OTM4NTEwMiwic3ViIjoiZGV2ZWxvcGVyL2NjYzBiN2Q5LTgzMjQtN2Q4ZS02YWQ1LTkyNjVmYzc4M2VlZCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjQ5LjM3LjIyMy45Il0sInR5cGUiOiJjbGllbnQifV19.MJzhYsQYx-keHzbTRZrV4stAw9QqRjmmrn5RssMCzQk6PLZ4A00hxPnqIeQ3npy8G1ndfnblC4mhFKckRC0QJg'  # Replace with your actual token
+# --------------------------------
+# 🔐 Load Environment Variables
+# --------------------------------
+load_dotenv()
+
+COC_API_TOKEN = os.getenv("COC_API_TOKEN")
+GOOGLE_CREDS_B64 = os.getenv("GOOGLE_CREDS_B64")
+
+if not COC_API_TOKEN:
+    print("❌ COC_API_TOKEN not found in .env file!")
+    exit()
+else:
+    print("✅ Token loaded successfully")
+
+if not GOOGLE_CREDS_B64:
+    print("❌ GOOGLE_CREDS_B64 not found in .env file!")
+    exit()
+
+# --------------------------------
+# 🔧 Configuration
+# --------------------------------
 CLAN_TAG = '#PQJJQ2PG'.replace('#', '%23')
 SHEET_NAME = 'war report'
 WORKSHEET_NAME = 'Sheet1'
 RETRY_LIMIT = 5
 RETRY_DELAY = 60  # seconds
 UPDATE_INTERVAL = 2 * 60  # 2 minutes
-# ------------------------------
+IST = pytz.timezone('Asia/Kolkata')
 
-# GSpread Setup
+# --------------------------------
+# 📝 Setup Google Sheets
+# --------------------------------
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-
-# Decode base64 JSON from environment variable
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-service_account_info = json.loads(base64.b64decode(os.environ["GOOGLE_CREDS_B64"]))
-creds = ServiceAccountCredentials.from_json_keyfile_name("sheets-bot.json", scope)
+service_account_info = json.loads(base64.b64decode(GOOGLE_CREDS_B64))
+creds = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
 client = gspread.authorize(creds)
 
-# Retry sheet access if API throws error
 retry_count = 0
 while retry_count < RETRY_LIMIT:
     try:
@@ -44,13 +64,17 @@ if retry_count == RETRY_LIMIT:
     print("❌ Too many retries. Exiting.")
     exit()
 
-# Format UTC timestamp to IST
+# --------------------------------
+# ⏰ Time Formatter (UTC → IST)
+# --------------------------------
 def format_time(ts_str):
     dt = datetime.strptime(ts_str, "%Y%m%dT%H%M%S.%fZ")
     ist_dt = dt + timedelta(hours=5, minutes=30)
     return ist_dt.strftime("%Y-%m-%d %H:%M")
 
-# Fetch war data from COC API
+# --------------------------------
+# 📡 Fetch War Data from CoC API
+# --------------------------------
 def fetch_clan_war():
     headers = {
         "Authorization": f"Bearer {COC_API_TOKEN}",
@@ -62,7 +86,9 @@ def fetch_clan_war():
         raise Exception(f"API Error: {response.status_code} - {response.text}")
     return response.json()
 
-# Update war info (A1)
+# --------------------------------
+# 📊 Update War Timing at A1
+# --------------------------------
 def update_timing_info(sheet, war_data):
     start_time = war_data.get('startTime')
     end_time = war_data.get('endTime')
@@ -79,18 +105,20 @@ def update_timing_info(sheet, war_data):
         ['⚔️ War End Time', war_end],
         ['⏱️ Time Left', str(time_left).split('.')[0] if time_left != 'N/A' else 'N/A']
     ]
-    sheet.update('A1', timing_info)
+    sheet.update(range_name='A1', values=timing_info)
 
-# Update war report for both clans
+# --------------------------------
+# 📝 Update Clan + Opponent Reports
+# --------------------------------
 def update_sheet(war_data):
-    # Our Clan - A7
-    our_clan_members = war_data['clan']['members']
+    # --- Our Clan Report (A7)
+    our_members = war_data['clan']['members']
     our_data = [[
         'No', 'Tag', 'Name', 'Townhall', 'Map Pos', 'Total Stars', 'Destruction %',
         '1st Attack', 'Stars', 'Destruction', '2nd Attack', 'Stars', 'Destruction', 'Points'
     ]]
 
-    for i, member in enumerate(our_clan_members, 1):
+    for i, member in enumerate(our_members, 1):
         attacks = member.get('attacks', [])
         attack1 = attacks[0] if len(attacks) > 0 else {}
         attack2 = attacks[1] if len(attacks) > 1 else {}
@@ -112,10 +140,9 @@ def update_sheet(war_data):
             len(attacks)
         ]
         our_data.append(row)
+    sheet.update(range_name='A7', values=our_data)
 
-    sheet.update('A7', our_data)
-
-    # Opponent Clan - A60
+    # --- Opponent Clan Report (A60)
     enemy_members = war_data['opponent']['members']
     enemy_data = [[
         'No', 'Tag', 'Name', 'Townhall', 'Map Pos', 'Total Stars', 'Destruction %',
@@ -144,10 +171,9 @@ def update_sheet(war_data):
             len(attacks)
         ]
         enemy_data.append(row)
+    sheet.update(range_name='A60', values=enemy_data)
 
-    sheet.update('A60', enemy_data)
-
-    # Summary - A120
+    # --- Summary at A120
     summary = [
         ['Summary'],
         ['War State:', war_data.get('state')],
@@ -157,22 +183,28 @@ def update_sheet(war_data):
         ['Our Destruction:', f"{war_data['clan'].get('destructionPercentage', 0)}%"],
         ['Enemy Destruction:', f"{war_data['opponent'].get('destructionPercentage', 0)}%"]
     ]
-    sheet.update('A120', summary)
+    sheet.update(range_name='A120', values=summary)
 
-# Main auto-update loop
-ist = pytz.timezone('Asia/Kolkata')
+# --------------------------------
+# 🔁 Infinite War Update Loop
+# --------------------------------
 while True:
     try:
-        now = datetime.now(ist).strftime("%Y-%m-%d %H:%M:%S")
-        sheet.update('B5', [[f"🕒 War data updated at {now}"]])
+        now = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S")
+        sheet.update(range_name='B5', values=[[f"🕒 War data updated at {now}"]])
         war_data = fetch_clan_war()
         update_timing_info(sheet, war_data)
         update_sheet(war_data)
-        with open("log.txt", "a") as log:
+
+        with open("log.txt", "a", encoding="utf-8") as log:
             log.write(f"[{now}] ✅ War updated\n")
-        print("✅ War data updated!")
+
+        print(f"✅ War data updated at {now}")
+
     except Exception as e:
         print(f"❌ Error: {e}")
+        with open("log.txt", "a", encoding="utf-8") as log:
+            log.write(f"[{now}] ❌ Error: {e}\n")
 
-    print("⏳ Waiting 2 minutes before next update...")
+    print("⏳ Waiting 2 minutes before next update...\n")
     time.sleep(UPDATE_INTERVAL)
