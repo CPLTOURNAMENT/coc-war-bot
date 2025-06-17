@@ -28,6 +28,7 @@ if not COC_API_TOKEN or not GOOGLE_CREDS_B64:
 # 🔧 Configuration
 # --------------------------------
 SHEET_NAME = 'war report'
+
 WORKSHEET_NAME = 'Sheet1'
 RETRY_LIMIT = 5
 RETRY_DELAY = 60  # seconds
@@ -176,6 +177,10 @@ def manual_update():
     except Exception as e:
         return f"❌ Error: {e}"
 
-if __name__ == "__main__":
+@app.before_first_request
+def activate_auto_update():
     threading.Thread(target=update_loop, daemon=True).start()
+
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
