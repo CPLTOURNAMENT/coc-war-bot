@@ -160,9 +160,9 @@ def update_loop():
 # --------------------------------
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET", "HEAD"])
 def home():
-    return "🔥 COC War Bot is Running!"
+    return "🔥 COC War Bot is Running!", 200
 
 @app.route("/update")
 def manual_update():
@@ -175,6 +175,7 @@ def manual_update():
         return f"✅ Manual update done at {now}"
     except Exception as e:
         return f"❌ Error: {e}"
+
 
 
 
