@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: coc-war-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app
+    envVars:
+      - key: COC_API_TOKEN
+        value: your_coc_api_token_here
+      - key: GOOGLE_CREDS_B64
+        value: your_base64_encoded_google_service_account_json
+      - key: CLAN_TAG
+        value: #PQJJQ2PG
+      - key: PYTHON_VERSION
+        value: 3.10.13
