@@ -176,13 +176,10 @@ def manual_update():
     except Exception as e:
         return f"❌ Error: {e}"
 
-@app.before_first_request
-def activate_auto_update():
-    threading.Thread(target=update_loop, daemon=True).start()
+
 
 def start_bot():
     threading.Thread(target=update_loop, daemon=True).start()
-
 
 start_bot()
 
